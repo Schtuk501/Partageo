@@ -625,11 +625,11 @@
         <button type="button" class="close-btn" onclick="closeModal('cloudModal')">✕</button>
       </div>
       <p style="font-size:13px; color:var(--subtext); line-height:1.5; margin-bottom:14px;">
-        Pour synchroniser vos dépenses entre vos deux iPhones (avec rattrapage automatique hors-ligne), renseigne l'adresse de ton serveur de données (ton NAS, ou une base Firebase) et un <strong>code secret long</strong> commun. Ce code est le seul mot de passe : génère-le ici, puis copie-le sur l'autre iPhone.
+        Pour synchroniser vos dépenses entre vos deux iPhones (avec rattrapage automatique hors-ligne), renseigne l'adresse de ta base <strong>Firebase Realtime Database</strong> (gratuite) et un <strong>code secret long</strong> commun. Ce code est le seul mot de passe : génère-le ici, puis copie-le sur l'autre iPhone.
       </p>
       <div class="form-group">
-        <label class="form-label">Adresse du serveur (https://…, sans / final)</label>
-        <input type="url" id="cloudDbUrl" class="input" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="https://partageo.votre-reseau.ts.net" />
+        <label class="form-label">Adresse de la base Firebase (https://…, sans / final)</label>
+        <input type="url" id="cloudDbUrl" class="input" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="https://mon-projet-default-rtdb.europe-west1.firebasedatabase.app" />
       </div>
       <div class="form-group">
         <label class="form-label">Code secret commun (20 à 64 caractères : A-Z, 0-9, tirets)</label>
@@ -648,6 +648,9 @@
 
   <script>
     const STORAGE_KEY = 'partageo_clean_v2';
+    // Adresse de ta base Firebase, pré-remplie dans la fenêtre de synchro (facultatif).
+    // Ce n'est PAS un secret. Ne mets JAMAIS le code de salle ici (le dépôt GitHub est public).
+    const DEFAULT_DB_URL = '';  // ex: 'https://mon-projet-default-rtdb.europe-west1.firebasedatabase.app'
     const CLOUD_KEY = 'partageo_cloud_config_v2';
 
     let state = {
@@ -664,7 +667,7 @@
         }
       ],
       pendingSync: false,
-      updatedAt: Date.now()
+      updatedAt: 0   // 0 = état vierge : les données du cloud l'emportent toujours
     };
 
     let cloudConfig = {
@@ -711,7 +714,7 @@
     // Reconstruit un état propre à partir de données externes (cloud, import, stockage local).
     function sanitizeState(raw) {
       if (!raw || typeof raw !== 'object' || !Array.isArray(raw.groups) || raw.groups.length === 0) return null;
-      const arr = (a, max) => (Array.isArray(a) ? a.slice(0, max) : []);
+      const arr = (a, max) => (Array.isArray(a) ? a.slice(0, max) : (a && typeof a === 'object' ? Object.values(a).slice(0, max) : []));
       const groups = arr(raw.groups, 50).map((g, gi) => {
         g = g && typeof g === 'object' ? g : {};
         return {
@@ -872,6 +875,7 @@
 
     function describeSyncError(e) {
       if (e && e.name === 'AbortError') return 'délai dépassé';
+      if (e && (e.message === 'HTTP 401' || e.message === 'HTTP 403')) return 'accès refusé (règles Firebase ?)';
       return (e && e.message) ? e.message : 'réseau';
     }
 
@@ -914,8 +918,15 @@
           return;
         }
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        const remote = sanitizeState(await res.json());
+        const data = await res.json();
         syncError = '';
+        if (data === null) {
+          // Salle vide (Firebase répond 200 + null) : on y envoie nos données s'il y en a
+          if (state.updatedAt) pushToCloud();
+          updateSyncBadge();
+          return;
+        }
+        const remote = sanitizeState(data);
         if (remote && remote.updatedAt && (manual || !state.updatedAt || remote.updatedAt > state.updatedAt)) {
           remote.pendingSync = false;
           state = remote;
@@ -932,12 +943,11 @@
 
     function startPolling() {
       if (pollTimer) clearInterval(pollTimer);
-      pollTimer = cloudReady() ? setInterval(() => pullFromCloud(false), 8000) : null;
+      pollTimer = cloudReady() ? setInterval(() => { if (!document.hidden) pullFromCloud(false); }, 15000) : null;
     }
 
     function openCloudModal() {
-      const defaultUrl = location.protocol.startsWith('http') ? location.origin : '';
-      document.getElementById('cloudDbUrl').value = cloudConfig.dbUrl || defaultUrl;
+      document.getElementById('cloudDbUrl').value = cloudConfig.dbUrl || DEFAULT_DB_URL;
       document.getElementById('cloudRoomCode').value = cloudConfig.roomCode || '';
       document.getElementById('cloudModal').classList.add('open');
     }
