@@ -34,6 +34,7 @@
       --sab: env(safe-area-inset-bottom, 0px);
       --sal: env(safe-area-inset-left, 0px);
       --sar: env(safe-area-inset-right, 0px);
+      --nav-lift: 24px; /* hauteur minimale sous la barre d'onglets : augmenter pour la remonter davantage */
     }
 
     html { height: 100%; background-color: #FFFFFF; overflow: hidden; -webkit-text-size-adjust: 100%; }
@@ -95,7 +96,7 @@
     .pos-amount { color: var(--success); font-weight: 700; }
     .neg-amount { color: var(--danger); font-weight: 700; }
     
-    nav.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; padding-top: 8px; padding-bottom: calc(var(--sab) + 8px); z-index: 30; }
+    nav.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; padding-top: 8px; padding-bottom: calc(max(var(--sab), var(--nav-lift)) + 8px); z-index: 30; }
     
     .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--subtext); font-size: 11px; font-weight: 500; cursor: pointer; flex: 1; }
     .tab-btn.active { color: var(--primary); font-weight: 600; }
@@ -1205,10 +1206,11 @@
     loadState();
   </script>
 <script>
-/* Ajuste les zones sûres iOS : si la zone d'affichage exclut déjà l'encoche / la barre d'accueil,
-   on met les marges à 0 pour ne pas les ajouter une seconde fois. */
+/* Ajuste les zones sûres iOS. DEBUG = true affiche un encart de diagnostic au milieu de l'écran
+   (mettre false une fois le réglage terminé). */
 (function () {
-  var root = document.documentElement;
+  var DEBUG = false, BUILD = 'v8-diag';
+  var root = document.documentElement, box = null;
   function readEnv() {
     var p = document.createElement('div');
     p.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;top:0;left:0;' +
@@ -1227,19 +1229,47 @@
       var e = readEnv();
       var land = window.innerWidth > window.innerHeight;
       var sh = land ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
-      var missing = sh - window.innerHeight;
-      var already = (e.t + e.b) > 0 && missing >= (e.t + e.b) - 3;
-      root.style.setProperty('--sat', (already ? 0 : e.t) + 'px');
-      root.style.setProperty('--sab', (already ? 0 : e.b) + 'px');
+      var missing = Math.max(0, sh - window.innerHeight);
+      var t = e.t, b = e.b;
+      if (missing > 3) {
+        // la zone d'affichage est plus courte que l'écran : on attribue d'abord le manque au bas, puis au haut
+        if (e.b > 0 && missing >= e.b - 3) { b = 0; missing -= e.b; }
+        if (e.t > 0 && missing >= e.t - 3) { t = 0; }
+      }
+      root.style.setProperty('--sat', t + 'px');
+      root.style.setProperty('--sab', b + 'px');
       root.style.setProperty('--sal', e.l + 'px');
       root.style.setProperty('--sar', e.r + 'px');
-    } catch (err) {}
+      if (DEBUG) show(e, sh, t, b);
+    } catch (err) { if (DEBUG) show({t:'err',r:0,b:err.message,l:0}, 0, 0, 0); }
+  }
+  function r(sel) {
+    var el = document.querySelector(sel); if (!el) return '-';
+    var q = el.getBoundingClientRect();
+    return Math.round(q.top) + '→' + Math.round(q.bottom);
+  }
+  function show(e, sh, t, b) {
+    if (!box) {
+      box = document.createElement('div');
+      box.style.cssText = 'position:fixed;left:8px;right:8px;top:42%;z-index:9999;background:rgba(0,0,0,.78);color:#0f0;' +
+        'font:11px/1.35 ui-monospace,Menlo,monospace;padding:8px 10px;border-radius:10px;pointer-events:none;white-space:pre-wrap';
+      document.body.appendChild(box);
+    }
+    var vv = window.visualViewport;
+    box.textContent = 'build ' + BUILD + '\n' +
+      'standalone: ' + (navigator.standalone === true) + ' | dpr ' + devicePixelRatio + '\n' +
+      'screen ' + screen.width + 'x' + screen.height + ' | inner ' + innerWidth + 'x' + innerHeight + '\n' +
+      'clientH ' + root.clientHeight + ' | visualVP ' + (vv ? Math.round(vv.height) + ' off ' + Math.round(vv.offsetTop) : '-') + '\n' +
+      'env top ' + e.t + ' bottom ' + e.b + ' left ' + e.l + ' right ' + e.r + '\n' +
+      'appliqué top ' + t + ' bottom ' + b + '\n' +
+      'header ' + r('header') + ' | nav ' + r('nav.tabbar') + ' | body ' + r('body');
   }
   update();
   ['resize', 'orientationchange', 'pageshow', 'focusout'].forEach(function (ev) {
     window.addEventListener(ev, function () { setTimeout(update, 60); setTimeout(update, 400); });
   });
   document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(update, 100); });
+  setTimeout(update, 800);
 })();
 </script>
 </body>
