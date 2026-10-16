@@ -27,7 +27,6 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     
-    /* Correction de l'espace gris en bas : le fond principal (html/body) est blanc (comme la navbar), et c'est le "main" qui porte le fond gris. */
     html, body { 
         width: 100%;
         height: 100%;
@@ -273,18 +272,11 @@
         <button type="button" id="txTypeRef" onclick="setTxType('refund')">Remboursement</button>
       </div>
       
-      <div id="expenseFields">
-        <div class="form-group">
-          <label class="form-label">Titre de la dépense</label>
-          <input type="text" id="expTitle" class="input" placeholder="Ex: Courses, Loyer, Restaurant..." />
-        </div>
-        
       <div style="display:flex; gap:10px; margin-bottom: 14px;">
         <div class="form-group" style="flex:1; margin-bottom:0;">
           <label class="form-label">Montant (€)</label>
           <input type="number" step="0.01" id="expAmount" class="input" placeholder="0.00" oninput="updateSplitPreview()" />
         </div>
-        
         <div class="form-group" style="flex:1; margin-bottom:0;">
           <label class="form-label">Date</label>
           <input type="date" id="expDate" class="input" />
@@ -292,6 +284,12 @@
       </div>
 
       <!-- CHAMPS DEPENSES -->
+      <div id="expenseFields">
+        <div class="form-group">
+          <label class="form-label">Titre de la dépense</label>
+          <input type="text" id="expTitle" class="input" placeholder="Ex: Courses, Loyer, Restaurant..." />
+        </div>
+        
         <div style="display:flex; gap:10px;">
           <div class="form-group" style="flex:1;">
             <label class="form-label">Catégorie</label>
@@ -345,6 +343,15 @@
         <div class="form-group">
           <label class="form-label">À (celui qui est remboursé)</label>
           <select id="refundTo" class="input"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Moyen de paiement</label>
+          <select id="refundMethod" class="input">
+            <option value="Virement">Virement</option>
+            <option value="Paylib/Wero">Paylib/Wero</option>
+            <option value="Lydia">Lydia</option>
+            <option value="Espèces">Espèces</option>
+          </select>
         </div>
       </div>
 
