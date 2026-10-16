@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Partageo" />
   <meta name="theme-color" content="#0F172A" />
-  <link rel="manifest" href='data:application/manifest+json,{"name":"Partageo","short_name":"Partageo","display":"standalone","background_color":"#FFFFFF","theme_color":"#0F172A"}' />
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Partageo","short_name":"Partageo","display":"standalone","background_color":"#F2F2F7","theme_color":"#0F172A"}' />
   <title>Partageo — Comptes partagés</title>
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%234F46E5'/><text x='90' y='118' font-size='85' text-anchor='middle' fill='white' font-family='-apple-system, sans-serif' font-weight='bold'>P</text></svg>" />
   <style>
@@ -27,19 +27,8 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     
-    /* Correction de l'espace gris en bas : le fond principal (html/body) est blanc (comme la navbar), et c'est le "main" qui porte le fond gris. */
-    html, body { 
-        width: 100%;
-        height: 100%;
-        height: 100vh; 
-        height: 100dvh; 
-        margin: 0; 
-        padding: 0; 
-        background-color: #FFFFFF; 
-        overflow: hidden; 
-    }
-
-    body { display: flex; flex-direction: column; color: var(--text); user-select: none; }
+    /* Utilisation de position: fixed et inset: 0 pour éviter le bug d'espace en bas sur iOS (100dvh capricieux) */
+    body { background-color: var(--bg); color: var(--text); position: fixed; inset: 0; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
     
     header { background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding-top: calc(env(safe-area-inset-top, 20px) + 8px); padding-bottom: 12px; padding-left: 16px; padding-right: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 20; }
     .group-selector { display: flex; align-items: center; gap: 8px; background: var(--bg); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; color: var(--text); text-align: left; }
@@ -47,9 +36,7 @@
     .sync-online { background: #DCFCE7; color: #166534; }
     .sync-offline { background: #FEF3C7; color: #92400E; }
     .sync-local { background: #E0E7FF; color: #3730A3; }
-    
-    main { background-color: var(--bg); flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 120px; -webkit-overflow-scrolling: touch; }
-    
+    main { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 110px; -webkit-overflow-scrolling: touch; }
     .tab-view { display: none; animation: fadeIn 0.18s ease-out; }
     .tab-view.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
@@ -131,9 +118,9 @@
         </div>
       </div>
 
-      <!-- BLOC REMBOURSEMENTS SUGGÉRÉS SUR LA PAGE DÉPENSES -->
+      <!-- NOUVEAU BLOC REMBOURSEMENTS SUGGÉRÉS SUR LA PAGE DÉPENSES -->
       <div class="hero-card" id="heroSettlementsCard" style="display:none; margin-top: -6px; margin-bottom: 16px;">
-        <h2 style="font-size: 16px; margin-bottom: 12px; opacity: 0.9; display: block;">Suivi (qui doit quoi) :</h2>
+        <h2 style="font-size: 16px; margin-bottom: 12px; opacity: 0.9; display: block;">Suivi :</h2>
         <div id="suggestedSettlementsExpenses"></div>
       </div>
 
@@ -150,12 +137,6 @@
       <div class="card">
         <h2>Solde de chacun</h2>
         <div id="balancesList"></div>
-      </div>
-
-      <!-- HISTORIQUE PAR MOIS -->
-      <div class="card">
-        <h2>Historique par mois</h2>
-        <div id="monthlyHistoryList"></div>
       </div>
 
       <div class="card">
@@ -834,7 +815,16 @@
         container.innerHTML = grp.members.map(m => `
           <div class="split-row"><span>${esc(m.name)} (€)</span><input type="number" step="0.01" class="split-custom-input" data-member="${m.id}" placeholder="0.00" /></div>
         `).join('');
-      } 
+      } else if (currentSplitMode === 'percent') {
+        const eqPct = Math.round(100 / grp.members.length);
+        container.innerHTML = grp.members.map(m => `
+          <div class="split-row"><span>${esc(m.name)} (%)</span><input type="number" step="1" class="split-custom-input" data-member="${m.id}" value="${eqPct}" /></div>
+        `).join('');
+      } else if (currentSplitMode === 'shares') {
+        container.innerHTML = grp.members.map(m => `
+          <div class="split-row"><span>${esc(m.name)} (parts)</span><input type="number" step="1" class="split-custom-input" data-member="${m.id}" value="1" /></div>
+        `).join('');
+      }
       updateSplitPreview();
     }
 
@@ -963,58 +953,6 @@
       return results;
     }
 
-    function renderMonthlyHistory(grp) {
-      const container = document.getElementById('monthlyHistoryList');
-      if (!grp.expenses || grp.expenses.length === 0) {
-        container.innerHTML = `<div class="empty-state">Aucune dépense pour l'historique.</div>`;
-        return;
-      }
-
-      // Grouper par YYYY-MM
-      const monthsData = {};
-      grp.expenses.forEach(e => {
-        if (!e.date) return;
-        const parts = e.date.split('-');
-        if (parts.length < 2) return;
-        const key = `${parts[0]}-${parts[1]}`; // yyyy-mm
-        
-        if (!monthsData[key]) {
-          monthsData[key] = { total: 0, categories: {} };
-        }
-        monthsData[key].total += e.amount;
-        monthsData[key].categories[e.category] = (monthsData[key].categories[e.category] || 0) + e.amount;
-      });
-
-      const sortedKeys = Object.keys(monthsData).sort().reverse();
-      const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-
-      container.innerHTML = sortedKeys.map(key => {
-        const data = monthsData[key];
-        const [y, m] = key.split('-');
-        const monthIndex = parseInt(m, 10) - 1;
-        const monthName = `${monthNames[monthIndex]} ${y}`;
-        
-        const catHtml = Object.entries(data.categories).sort((a,b) => b[1] - a[1]).map(([cat, val]) => `
-          <div style="display:flex; justify-content:space-between; font-size:13px; margin-top:8px; color:var(--subtext);">
-            <span>${esc(cat)}</span>
-            <span style="font-weight:600;">${val.toFixed(2)} €</span>
-          </div>
-        `).join('');
-
-        return `
-          <div style="border-bottom:1px solid var(--border); padding: 12px 0;">
-            <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600; cursor:pointer;" onclick="const el = document.getElementById('month-${key}'); el.style.display = el.style.display === 'none' ? 'block' : 'none';">
-              <span style="font-size:15px;">📅 ${monthName}</span>
-              <span style="color:var(--primary); font-size:15px;">${data.total.toFixed(2)} € ▾</span>
-            </div>
-            <div id="month-${key}" style="display:none; margin-top:12px; background:var(--bg); padding:12px; border-radius:12px;">
-              ${catHtml}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
     function getMemberName(grp, id) { const m = grp.members.find(x => x.id === id); return m ? m.name : 'Ancien membre'; }
     function escName(grp, id) { return esc(getMemberName(grp, id)); }
 
@@ -1067,8 +1005,8 @@
           `;
         }).join('');
         
-        if (!showAllExpenses && filteredExpenses.length > 5) {
-          htmlList += `<button type="button" class="btn btn-secondary" style="margin-top:12px;" onclick="showAllExpenses=true; renderAll()">Voir les ${filteredExpenses.length - 5} autres opérations</button>`;
+        if (!showAllExpenses && filteredExpenses.length > 3) {
+          htmlList += `<button type="button" class="btn btn-secondary" style="margin-top:12px;" onclick="showAllExpenses=true; renderAll()">Voir les ${filteredExpenses.length - 3} autres opérations</button>`;
         }
         expContainer.innerHTML = htmlList;
       }
@@ -1102,9 +1040,6 @@
           return `<div class="balance-row"><span><strong>${esc(m.name)}</strong></span><span class="${cls}">${sign}${val.toFixed(2)} €</span></div>`;
         }).join('');
       }
-
-      // Historique mensuel
-      renderMonthlyHistory(grp);
 
       const payHist = document.getElementById('paymentsHistoryList');
       if (!grp.settlements || grp.settlements.length === 0) payHist.innerHTML = `<div class="empty-state">Aucun règlement effectué.</div>`;
