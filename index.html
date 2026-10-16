@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Partageo" />
   <meta name="theme-color" content="#0F172A" />
   <link rel="manifest" href='data:application/manifest+json,{"name":"Partageo","short_name":"Partageo","display":"standalone","background_color":"#FFFFFF","theme_color":"#0F172A"}' />
@@ -27,20 +27,32 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     
-    html, body { 
+    /* Zones sûres : valeurs par défaut = env(), ajustées par le script en bas de page
+       (sur iOS récent la webview exclut parfois déjà ces zones : il ne faut pas les compter deux fois). */
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+      --nav-lift: 16px; /* hauteur minimale sous la barre d'onglets : augmenter pour la remonter davantage */
+    }
+
+    html { height: 100%; background-color: #FFFFFF; overflow: hidden; -webkit-text-size-adjust: 100%; }
+
+    body {
+        position: fixed;
+        top: 0; right: 0; bottom: 0; left: 0;
         width: 100%;
-        height: 100%;
-        height: 100vh; 
-        height: 100dvh; 
-        margin: 0; 
-        padding: 0; 
-        background-color: #FFFFFF; 
-        overflow: hidden; 
+        margin: 0;
+        padding: 0;
+        background-color: #FFFFFF;
+        overflow: hidden;
+        overscroll-behavior: none;
     }
 
     body { display: flex; flex-direction: column; color: var(--text); user-select: none; }
     
-    header { background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding-top: calc(env(safe-area-inset-top, 20px) + 8px); padding-bottom: 12px; padding-left: 16px; padding-right: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 20; }
+    header { background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding-top: calc(var(--sat) + 8px); padding-bottom: 12px; padding-left: calc(var(--sal) + 16px); padding-right: calc(var(--sar) + 16px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 20; flex-shrink: 0; }
     .group-selector { display: flex; align-items: center; gap: 8px; background: var(--bg); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; color: var(--text); text-align: left; }
     .sync-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 16px; cursor: pointer; border: none; }
     .sync-online { background: #DCFCE7; color: #166534; }
@@ -84,7 +96,7 @@
     .pos-amount { color: var(--success); font-weight: 700; }
     .neg-amount { color: var(--danger); font-weight: 700; }
     
-    nav.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; padding-top: 8px; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); z-index: 30; }
+    nav.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; padding-top: 8px; padding-bottom: calc(max(var(--sab), var(--nav-lift)) + 8px); z-index: 30; }
     
     .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--subtext); font-size: 11px; font-weight: 500; cursor: pointer; flex: 1; }
     .tab-btn.active { color: var(--primary); font-weight: 600; }
@@ -92,7 +104,7 @@
     .fab-add { background: var(--primary); color: white; width: 48px; height: 48px; border-radius: 24px; border: none; font-size: 26px; font-weight: 400; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); cursor: pointer; margin-top: -14px; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
     .modal-overlay.open { display: flex; }
-    .modal-sheet { background: var(--card); width: 100%; max-width: 540px; max-height: 90dvh; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 20px 18px calc(env(safe-area-inset-bottom, 0px) + 20px); overflow-y: auto; animation: slideUp 0.22s ease-out; }
+    .modal-sheet { background: var(--card); width: 100%; max-width: 540px; max-height: 90dvh; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 20px 18px calc(var(--sab) + 20px); overflow-y: auto; animation: slideUp 0.22s ease-out; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .modal-title { font-size: 18px; font-weight: 700; }
@@ -1201,5 +1213,72 @@
 
     loadState();
   </script>
+<script>
+/* Ajuste les zones sûres iOS. DEBUG = true affiche un encart de diagnostic au milieu de l'écran
+   (mettre false une fois le réglage terminé). */
+(function () {
+  var DEBUG = false, BUILD = 'v8-diag';
+  var root = document.documentElement, box = null;
+  function readEnv() {
+    var p = document.createElement('div');
+    p.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;top:0;left:0;' +
+      'padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
+    document.body.appendChild(p);
+    var cs = getComputedStyle(p);
+    var v = { t: parseFloat(cs.paddingTop) || 0, r: parseFloat(cs.paddingRight) || 0,
+              b: parseFloat(cs.paddingBottom) || 0, l: parseFloat(cs.paddingLeft) || 0 };
+    document.body.removeChild(p);
+    return v;
+  }
+  function update() {
+    try {
+      var a = document.activeElement;
+      if (a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)) return;
+      var e = readEnv();
+      var land = window.innerWidth > window.innerHeight;
+      var sh = land ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+      var missing = Math.max(0, sh - window.innerHeight);
+      var t = e.t, b = e.b;
+      if (missing > 3) {
+        // la zone d'affichage est plus courte que l'écran : on attribue d'abord le manque au bas, puis au haut
+        if (e.b > 0 && missing >= e.b - 3) { b = 0; missing -= e.b; }
+        if (e.t > 0 && missing >= e.t - 3) { t = 0; }
+      }
+      root.style.setProperty('--sat', t + 'px');
+      root.style.setProperty('--sab', b + 'px');
+      root.style.setProperty('--sal', e.l + 'px');
+      root.style.setProperty('--sar', e.r + 'px');
+      if (DEBUG) show(e, sh, t, b);
+    } catch (err) { if (DEBUG) show({t:'err',r:0,b:err.message,l:0}, 0, 0, 0); }
+  }
+  function r(sel) {
+    var el = document.querySelector(sel); if (!el) return '-';
+    var q = el.getBoundingClientRect();
+    return Math.round(q.top) + '→' + Math.round(q.bottom);
+  }
+  function show(e, sh, t, b) {
+    if (!box) {
+      box = document.createElement('div');
+      box.style.cssText = 'position:fixed;left:8px;right:8px;top:42%;z-index:9999;background:rgba(0,0,0,.78);color:#0f0;' +
+        'font:11px/1.35 ui-monospace,Menlo,monospace;padding:8px 10px;border-radius:10px;pointer-events:none;white-space:pre-wrap';
+      document.body.appendChild(box);
+    }
+    var vv = window.visualViewport;
+    box.textContent = 'build ' + BUILD + '\n' +
+      'standalone: ' + (navigator.standalone === true) + ' | dpr ' + devicePixelRatio + '\n' +
+      'screen ' + screen.width + 'x' + screen.height + ' | inner ' + innerWidth + 'x' + innerHeight + '\n' +
+      'clientH ' + root.clientHeight + ' | visualVP ' + (vv ? Math.round(vv.height) + ' off ' + Math.round(vv.offsetTop) : '-') + '\n' +
+      'env top ' + e.t + ' bottom ' + e.b + ' left ' + e.l + ' right ' + e.r + '\n' +
+      'appliqué top ' + t + ' bottom ' + b + '\n' +
+      'header ' + r('header') + ' | nav ' + r('nav.tabbar') + ' | body ' + r('body');
+  }
+  update();
+  ['resize', 'orientationchange', 'pageshow', 'focusout'].forEach(function (ev) {
+    window.addEventListener(ev, function () { setTimeout(update, 60); setTimeout(update, 400); });
+  });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(update, 100); });
+  setTimeout(update, 800);
+})();
+</script>
 </body>
 </html>
