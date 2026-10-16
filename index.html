@@ -283,7 +283,10 @@
         <button type="button" id="txTypeExp" class="active" onclick="setTxType('expense')">Dépense</button>
         <button type="button" id="txTypeRef" onclick="setTxType('refund')">Remboursement</button>
       </div>
-      
+      <div class="form-group">
+          <label class="form-label">Titre de la dépense</label>
+          <input type="text" id="expTitle" class="input" placeholder="Ex: Courses, Loyer, Restaurant..." />
+        </div>
       <div style="display:flex; gap:10px; margin-bottom: 14px;">
         <div class="form-group" style="flex:1; margin-bottom:0;">
           <label class="form-label">Montant (€)</label>
@@ -297,10 +300,7 @@
 
       <!-- CHAMPS DEPENSES -->
       <div id="expenseFields">
-        <div class="form-group">
-          <label class="form-label">Titre de la dépense</label>
-          <input type="text" id="expTitle" class="input" placeholder="Ex: Courses, Loyer, Restaurant..." />
-        </div>
+        
         
         <div style="display:flex; gap:10px;">
           <div class="form-group" style="flex:1;">
