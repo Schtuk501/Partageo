@@ -23,14 +23,15 @@
       --danger: #EF4444;
       --warning: #F59E0B;
       --border: #E5E5EA;
-      --safe-top: env(safe-area-inset-top, 20px);
-      --safe-bottom: env(safe-area-inset-bottom, 20px);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
-    header { background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding-top: calc(var(--safe-top) + 8px); padding-bottom: 12px; padding-left: 16px; padding-right: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 20; }
-    .group-selector { display: flex; align-items: center; gap: 8px; background: var(--bg); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; color: var(--text); }
+    
+    /* Utilisation de position: fixed et inset: 0 pour éviter le bug d'espace en bas sur iOS (100dvh capricieux) */
+    body { background-color: var(--bg); color: var(--text); position: fixed; inset: 0; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
+    
+    header { background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding-top: calc(env(safe-area-inset-top, 20px) + 8px); padding-bottom: 12px; padding-left: 16px; padding-right: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 20; }
+    .group-selector { display: flex; align-items: center; gap: 8px; background: var(--bg); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; color: var(--text); text-align: left; }
     .sync-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 16px; cursor: pointer; border: none; }
     .sync-online { background: #DCFCE7; color: #166534; }
     .sync-offline { background: #FEF3C7; color: #92400E; }
@@ -70,14 +71,16 @@
     .balance-row:last-child { border-bottom: none; }
     .pos-amount { color: var(--success); font-weight: 700; }
     .neg-amount { color: var(--danger); font-weight: 700; }
-    nav.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; padding-top: 8px; padding-bottom: calc(var(--safe-bottom) + 6px); z-index: 30; }
+    
+    nav.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; padding-top: 8px; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); z-index: 30; }
+    
     .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--subtext); font-size: 11px; font-weight: 500; cursor: pointer; flex: 1; }
     .tab-btn.active { color: var(--primary); font-weight: 600; }
     .tab-icon { font-size: 21px; }
     .fab-add { background: var(--primary); color: white; width: 48px; height: 48px; border-radius: 24px; border: none; font-size: 26px; font-weight: 400; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); cursor: pointer; margin-top: -14px; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
     .modal-overlay.open { display: flex; }
-    .modal-sheet { background: var(--card); width: 100%; max-width: 540px; max-height: 90dvh; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 20px 18px calc(var(--safe-bottom) + 20px); overflow-y: auto; animation: slideUp 0.22s ease-out; }
+    .modal-sheet { background: var(--card); width: 100%; max-width: 540px; max-height: 90dvh; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 20px 18px calc(env(safe-area-inset-bottom, 0px) + 20px); overflow-y: auto; animation: slideUp 0.22s ease-out; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .modal-title { font-size: 18px; font-weight: 700; }
@@ -115,6 +118,12 @@
         </div>
       </div>
 
+      <!-- NOUVEAU BLOC REMBOURSEMENTS SUGGÉRÉS SUR LA PAGE DÉPENSES -->
+      <div class="hero-card" id="heroSettlementsCard" style="display:none; margin-top: -6px; margin-bottom: 16px;">
+        <h2 style="font-size: 16px; margin-bottom: 12px; opacity: 0.9; display: block;">Remboursements suggérés</h2>
+        <div id="suggestedSettlementsExpenses"></div>
+      </div>
+
       <div class="card">
         <h2>
           <span>Dépenses</span>
@@ -128,11 +137,6 @@
       <div class="card">
         <h2>Solde de chacun</h2>
         <div id="balancesList"></div>
-      </div>
-
-      <div class="card">
-        <h2>Qui doit combien à qui ?</h2>
-        <div id="settlementsList"></div>
       </div>
 
       <div class="card">
@@ -670,12 +674,15 @@
     function openGroupModal() {
       const container = document.getElementById('groupsListModal');
       container.innerHTML = state.groups.map(g => `
-        <div class="member-chip" style="cursor:pointer; border:${g.id === state.activeGroupId ? '2px solid var(--primary)' : 'none'}" onclick="selectGroup('${g.id}')">
-          <div>
+        <div class="member-chip" style="display:flex; justify-content:space-between; align-items:center; border:${g.id === state.activeGroupId ? '2px solid var(--primary)' : 'none'}">
+          <div style="flex:1; cursor:pointer;" onclick="selectGroup('${g.id}')">
             <strong>${esc(g.theme.split(' ')[0])} ${esc(g.name)}</strong>
             <div style="font-size:12px; color:var(--subtext);">${g.members.length} participant(s) • ${g.expenses.length} dépense(s)</div>
           </div>
-          ${g.id === state.activeGroupId ? '<span class="badge">Actif</span>' : ''}
+          <div style="display:flex; align-items:center; gap:8px;">
+            ${g.id === state.activeGroupId ? '<span class="badge">Actif</span>' : ''}
+            ${state.groups.length > 1 ? `<button type="button" class="btn btn-danger btn-sm" style="padding:6px 8px; font-size:12px;" onclick="deleteGroup('${g.id}')" title="Supprimer le groupe">🗑️</button>` : ''}
+          </div>
         </div>
       `).join('');
       document.getElementById('groupModal').classList.add('open');
@@ -693,6 +700,19 @@
       document.getElementById('newGroupName').value = '';
       saveState(`Groupe "${name}" créé`);
       closeModal('groupModal');
+    }
+
+    function deleteGroup(id) {
+      if (state.groups.length <= 1) return alert("Impossible de supprimer le seul groupe existant.");
+      const grp = state.groups.find(g => g.id === id);
+      if (!confirm(`Supprimer définitivement le groupe "${grp.name}" et toutes ses dépenses ?`)) return;
+      
+      state.groups = state.groups.filter(g => g.id !== id);
+      if (state.activeGroupId === id) {
+        state.activeGroupId = state.groups[0].id;
+      }
+      saveState(`Groupe "${grp.name}" supprimé`);
+      openGroupModal();
     }
 
     function addMember() {
@@ -749,6 +769,14 @@
       setPayerMode('single');
       setSplitMode('equal', document.querySelector('.split-mode-btn'));
       document.getElementById('expenseModal').classList.add('open');
+    }
+
+    function prefillRefund(fromId, toId, amount) {
+      openExpenseModal();
+      setTxType('refund');
+      document.getElementById('expAmount').value = amount.toFixed(2);
+      document.getElementById('refundFrom').value = fromId;
+      document.getElementById('refundTo').value = toId;
     }
 
     function setPayerMode(mode) {
@@ -1011,6 +1039,24 @@
       }
 
       const balances = computeBalances(grp);
+      
+      // Remboursements suggérés (Onglet Dépenses)
+      const suggestions = computeSuggestedSettlements(grp, balances);
+      const heroSetCard = document.getElementById('heroSettlementsCard');
+      const setContainerExp = document.getElementById('suggestedSettlementsExpenses');
+      
+      if (suggestions.length === 0) {
+        heroSetCard.style.display = 'none';
+      } else {
+        heroSetCard.style.display = 'block';
+        setContainerExp.innerHTML = suggestions.map(s => `
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.15); padding: 10px 12px; border-radius: 12px; margin-bottom: 8px; font-size: 14px;">
+            <div><strong>${escName(grp, s.from)}</strong> <br/>doit <strong>${s.amount.toFixed(2)} €</strong> à <strong>${escName(grp, s.to)}</strong></div>
+            <button type="button" class="btn btn-sm" style="background: white; color: var(--primary); font-weight: bold; margin-left: 10px;" onclick="prefillRefund('${s.from}', '${s.to}', ${s.amount})">Rembourser</button>
+          </div>
+        `).join('');
+      }
+
       const balContainer = document.getElementById('balancesList');
       if (grp.members.length === 0) balContainer.innerHTML = `<div class="empty-state">Ajoute des participants.</div>`;
       else {
@@ -1022,17 +1068,6 @@
         }).join('');
       }
 
-      const suggestions = computeSuggestedSettlements(grp, balances);
-      const setContainer = document.getElementById('settlementsList');
-      if (suggestions.length === 0) setContainer.innerHTML = `<div class="empty-state">Les comptes sont parfaitement équilibrés ! ✨</div>`;
-      else {
-        setContainer.innerHTML = suggestions.map(s => `
-          <div class="balance-row">
-            <div><strong>${escName(grp, s.from)}</strong> doit <strong>${s.amount.toFixed(2)} €</strong> à <strong>${escName(grp, s.to)}</strong></div>
-          </div>
-        `).join('');
-      }
-
       const payHist = document.getElementById('paymentsHistoryList');
       if (!grp.settlements || grp.settlements.length === 0) payHist.innerHTML = `<div class="empty-state">Aucun règlement effectué.</div>`;
       else {
@@ -1040,6 +1075,43 @@
           <div class="balance-row" style="font-size:13px;">
             <span>✅ <strong>${escName(grp, s.from)}</strong> → <strong>${escName(grp, s.to)}</strong> (${esc(s.method)})</span>
             <span><strong>${s.amount.toFixed(2)} €</strong> • ${formatDateFR(esc(s.date))}</span>
+          </div>
+        `).join('');
+      }
+
+      // Re-intégration des données de Stats
+      const catContainer = document.getElementById('categoryStats');
+      if (grp.expenses.length === 0) {
+        catContainer.innerHTML = `<div class="empty-state">Ajoute des dépenses pour afficher les graphiques.</div>`;
+      } else {
+        const byCat = {};
+        grp.expenses.forEach(e => {
+          byCat[e.category] = (byCat[e.category] || 0) + e.amount;
+        });
+        catContainer.innerHTML = Object.entries(byCat).sort((a,b) => b[1] - a[1]).map(([cat, val]) => {
+          const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+          return `
+            <div style="margin-bottom:12px;">
+              <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+                <span><strong>${esc(cat)}</strong></span>
+                <span>${val.toFixed(2)} € (${pct}%)</span>
+              </div>
+              <div style="height:8px; background:var(--bg); border-radius:4px; overflow:hidden;">
+                <div style="height:100%; width:${pct}%; background:var(--primary);"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      const actContainer = document.getElementById('activityLogList');
+      if (!grp.activity || grp.activity.length === 0) {
+        actContainer.innerHTML = `<div class="empty-state">Aucune activité récente.</div>`;
+      } else {
+        actContainer.innerHTML = grp.activity.slice(0, 20).map(a => `
+          <div class="balance-row" style="font-size:13px;">
+            <span>${esc(a.text)}</span>
+            <span style="color:var(--subtext); font-size:11px;">${esc(a.date)}</span>
           </div>
         `).join('');
       }
