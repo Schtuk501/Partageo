@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Partageo" />
   <meta name="theme-color" content="#0F172A" />
   <link rel="manifest" href='data:application/manifest+json,{"name":"Partageo","short_name":"Partageo","display":"standalone","background_color":"#FFFFFF","theme_color":"#0F172A"}' />
@@ -27,20 +27,22 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     
-    html, body { 
+    html { height: 100%; background-color: #FFFFFF; overflow: hidden; -webkit-text-size-adjust: 100%; }
+
+    body {
+        position: fixed;
+        top: 0; right: 0; bottom: 0; left: 0;
         width: 100%;
-        height: 100%;
-        height: 100vh; 
-        height: 100dvh; 
-        margin: 0; 
-        padding: 0; 
-        background-color: #FFFFFF; 
-        overflow: hidden; 
+        margin: 0;
+        padding: 0;
+        background-color: #FFFFFF;
+        overflow: hidden;
+        overscroll-behavior: none;
     }
 
     body { display: flex; flex-direction: column; color: var(--text); user-select: none; }
     
-    header { background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding-top: calc(env(safe-area-inset-top, 20px) + 8px); padding-bottom: 12px; padding-left: 16px; padding-right: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 20; }
+    header { background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding-top: calc(env(safe-area-inset-top, 0px) + 8px); padding-bottom: 12px; padding-left: calc(env(safe-area-inset-left, 0px) + 16px); padding-right: calc(env(safe-area-inset-right, 0px) + 16px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 20; flex-shrink: 0; }
     .group-selector { display: flex; align-items: center; gap: 8px; background: var(--bg); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; color: var(--text); text-align: left; }
     .sync-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 16px; cursor: pointer; border: none; }
     .sync-online { background: #DCFCE7; color: #166534; }
@@ -344,15 +346,7 @@
           <label class="form-label">À (celui qui est remboursé)</label>
           <select id="refundTo" class="input"></select>
         </div>
-        <div class="form-group">
-          <label class="form-label">Moyen de paiement</label>
-          <select id="refundMethod" class="input">
-            <option value="Virement">Virement</option>
-            <option value="Paylib/Wero">Paylib/Wero</option>
-            <option value="Lydia">Lydia</option>
-            <option value="Espèces">Espèces</option>
-          </select>
-        </div>
+        
       </div>
 
       <button type="button" class="btn" onclick="saveTransaction()">Enregistrer</button>
@@ -470,7 +464,7 @@
               from: safeId(x.from, ''),
               to: safeId(x.to, ''),
               amount: toNum(x.amount),
-              method: toStr(x.method, 40),
+              method: toStr(x. 40),
               date: toStr(x.date, 30)
             };
           }),
@@ -867,7 +861,7 @@
       if (currentTxType === 'refund') {
         const fromId = document.getElementById('refundFrom').value;
         const toId = document.getElementById('refundTo').value;
-        const method = document.getElementById('refundMethod').value;
+        
         
         if (fromId === toId) return alert("L'émetteur et le destinataire doivent être différents.");
         
@@ -879,7 +873,7 @@
           from: fromId,
           to: toId,
           amount,
-          method,
+          
           date
         });
         saveState(`Remboursement : ${fromName} a réglé ${amount.toFixed(2)} € à ${toName}`);
@@ -1041,12 +1035,16 @@
       document.getElementById('heroGroupType').textContent = grp.theme;
       document.getElementById('heroMembersCount').textContent = `${grp.members.length} participant(s)`;
 
-      const total = grp.expenses.reduce((acc, e) => acc + e.amount, 0);
+      const now = new Date();
+      const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const currentMonthExpenses = grp.expenses.filter(e => e.date && e.date.startsWith(currentMonthStr));
+
+      const total = currentMonthExpenses.reduce((acc, e) => acc + e.amount, 0);
       document.getElementById('heroTotal').textContent = total.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
-      document.getElementById('heroExpenseCount').textContent = `${grp.expenses.length} dépense(s)`;
+      document.getElementById('heroExpenseCount').textContent = `${currentMonthExpenses.length} dépense(s) ce mois`;
 
       const query = (document.getElementById('searchInput').value || '').toLowerCase();
-      const filteredExpenses = grp.expenses.filter(e => e.title.toLowerCase().includes(query) || e.category.toLowerCase().includes(query));
+      const filteredExpenses = currentMonthExpenses.filter(e => e.title.toLowerCase().includes(query) || e.category.toLowerCase().includes(query));
       const displayedExpenses = showAllExpenses ? filteredExpenses : filteredExpenses.slice(0, 5);
 
       const expContainer = document.getElementById('expensesList');
@@ -1118,7 +1116,7 @@
       else {
         payHist.innerHTML = grp.settlements.map(s => `
           <div class="balance-row" style="font-size:13px;">
-            <span>✅ <strong>${escName(grp, s.from)}</strong> → <strong>${escName(grp, s.to)}</strong> (${esc(s.method)})</span>
+            <span>✅ <strong>${escName(grp, s.from)}</strong> → <strong>${escName(grp, s.to)}</strong> </span>
             <span><strong>${s.amount.toFixed(2)} €</strong> • ${formatDateFR(esc(s.date))}</span>
           </div>
         `).join('');
