@@ -120,7 +120,7 @@
 
       <!-- NOUVEAU BLOC REMBOURSEMENTS SUGGÉRÉS SUR LA PAGE DÉPENSES -->
       <div class="hero-card" id="heroSettlementsCard" style="display:none; margin-top: -6px; margin-bottom: 16px;">
-        <h2 style="font-size: 16px; margin-bottom: 12px; opacity: 0.9; display: block;">Remboursements suggérés</h2>
+        <h2 style="font-size: 16px; margin-bottom: 12px; opacity: 0.9; display: block;">Suivi :</h2>
         <div id="suggestedSettlementsExpenses"></div>
       </div>
 
@@ -232,7 +232,7 @@
       <div class="form-group">
         <label class="form-label">Thème / Type</label>
         <select id="newGroupTheme">
-          <option value="🏠 Colocation">🏠 Colocation / Maison</option>
+          <option value="🏠 Maison">🏠 Maison</option>
           <option value="🏖️ Vacances">🏖️ Vacances</option>
           <option value="🚗 Week-end">🚗 Week-end</option>
           <option value="🎉 Soirée">🎉 Soirée / Événement</option>
@@ -423,7 +423,7 @@
         return {
           id: safeId(g.id, 'g_' + gi),
           name: toStr(g.name, 80) || 'Groupe',
-          theme: toStr(g.theme, 60) || '🏠 Colocation',
+          theme: toStr(g.theme, 60) || '🏠 Maison',
           members: arr(g.members, 100).map((m, i) => ({ id: safeId(m && m.id, 'm_' + i), name: toStr(m && m.name, 60) })),
           expenses: arr(g.expenses, 5000).map((e, i) => {
             e = e && typeof e === 'object' ? e : {};
@@ -903,24 +903,7 @@
           if (val > 0) { splits[inp.dataset.member] = val; sumExact += val; }
         });
         if (Math.abs(sumExact - amount) > 0.05) return alert(`Le total réparti ne correspond pas au montant.`);
-      } else if (currentSplitMode === 'percent') {
-        let sumPct = 0;
-        document.querySelectorAll('.split-custom-input').forEach(inp => {
-          const pct = parseFloat(inp.value) || 0;
-          if (pct > 0) { splits[inp.dataset.member] = (amount * pct) / 100; sumPct += pct; }
-        });
-        if (Math.abs(sumPct - 100) > 0.5) return alert(`Le total des pourcentages doit faire 100 %`);
-      } else if (currentSplitMode === 'shares') {
-        let totalShares = 0;
-        const rawShares = {};
-        document.querySelectorAll('.split-custom-input').forEach(inp => {
-          const sh = parseFloat(inp.value) || 0;
-          if (sh > 0) { rawShares[inp.dataset.member] = sh; totalShares += sh; }
-        });
-        if (totalShares <= 0) return alert('Indique au moins 1 part.');
-        Object.keys(rawShares).forEach(mId => splits[mId] = (amount * rawShares[mId]) / totalShares);
-      }
-
+      } 
       grp.expenses.unshift({ id: 'exp_' + Date.now(), title, amount, category, date, recurring, paidBy, splits });
       closeModal('expenseModal');
       saveState(`Dépense "${title}" (${amount.toFixed(2)} €) ajoutée`);
