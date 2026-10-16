@@ -4,9 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Partageo" />
   <meta name="theme-color" content="#0F172A" />
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Partageo","short_name":"Partageo","display":"standalone","background_color":"#F2F2F7","theme_color":"#0F172A"}' />
   <title>Partageo — Comptes partagés</title>
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%234F46E5'/><text x='90' y='118' font-size='85' text-anchor='middle' fill='white' font-family='-apple-system, sans-serif' font-weight='bold'>P</text></svg>" />
   <style>
@@ -25,382 +27,64 @@
       --safe-bottom: env(safe-area-inset-bottom, 20px);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      user-select: none;
-    }
-
-    header {
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      padding-top: calc(var(--safe-top) + 8px);
-      padding-bottom: 12px;
-      padding-left: 16px;
-      padding-right: 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 20;
-    }
-
-    .group-selector {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--bg);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 15px;
-      cursor: pointer;
-      border: none;
-      color: var(--text);
-    }
-
-    .sync-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 6px 10px;
-      border-radius: 16px;
-      cursor: pointer;
-      border: none;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
+    header { background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding-top: calc(var(--safe-top) + 8px); padding-bottom: 12px; padding-left: 16px; padding-right: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 20; }
+    .group-selector { display: flex; align-items: center; gap: 8px; background: var(--bg); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; color: var(--text); }
+    .sync-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 16px; cursor: pointer; border: none; }
     .sync-online { background: #DCFCE7; color: #166534; }
     .sync-offline { background: #FEF3C7; color: #92400E; }
     .sync-local { background: #E0E7FF; color: #3730A3; }
-
-    main {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-      padding-bottom: 110px;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .tab-view {
-      display: none;
-      animation: fadeIn 0.18s ease-out;
-    }
-
-    .tab-view.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .card {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    }
-
-    .hero-card {
-      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
-      color: white;
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
-    }
-
-    .hero-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      opacity: 0.9;
-      margin-bottom: 6px;
-    }
-
-    .hero-amount {
-      font-size: 32px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      margin-bottom: 12px;
-    }
-
-    .hero-sub {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      background: rgba(255,255,255,0.15);
-      padding: 8px 12px;
-      border-radius: 12px;
-    }
-
-    h2 {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 32px 16px;
-      color: var(--subtext);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .expense-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-    }
+    main { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 110px; -webkit-overflow-scrolling: touch; }
+    .tab-view { display: none; animation: fadeIn 0.18s ease-out; }
+    .tab-view.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .card { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .hero-card { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25); }
+    .hero-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; opacity: 0.9; margin-bottom: 6px; }
+    .hero-amount { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 12px; }
+    .hero-sub { display: flex; justify-content: space-between; font-size: 13px; background: rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 12px; }
+    h2 { font-size: 18px; font-weight: 700; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .empty-state { text-align: center; padding: 32px 16px; color: var(--subtext); font-size: 14px; line-height: 1.5; }
+    .expense-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
     .expense-item:last-child { border-bottom: none; }
     .exp-left { display: flex; align-items: center; gap: 12px; }
-    .exp-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: var(--primary-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
+    .exp-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 20px; }
     .exp-title { font-weight: 600; font-size: 15px; color: var(--text); }
     .exp-meta { font-size: 12px; color: var(--subtext); margin-top: 2px; }
     .exp-right { text-align: right; }
     .exp-amount { font-weight: 700; font-size: 16px; }
-    .badge {
-      display: inline-block;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 6px;
-      background: #E0E7FF;
-      color: var(--primary);
-      font-weight: 600;
-      margin-top: 3px;
-    }
-
-    .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 13px 16px;
-      font-size: 15px;
-      font-weight: 600;
-      width: 100%;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
+    .badge { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 6px; background: #E0E7FF; color: var(--primary); font-weight: 600; margin-top: 3px; }
+    .btn { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 13px 16px; font-size: 15px; font-weight: 600; width: 100%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-secondary { background: var(--bg); color: var(--text); }
     .btn-danger { background: #FEE2E2; color: var(--danger); }
     .btn-sm { padding: 7px 12px; font-size: 13px; width: auto; border-radius: 9px; }
-
     .form-group { margin-bottom: 14px; }
-    .form-label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--subtext);
-      margin-bottom: 6px;
-    }
-    .input, select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      font-size: 15px;
-      background: #FAFAFA;
-      color: var(--text);
-      outline: none;
-      -webkit-user-select: text;
-      user-select: text;
-    }
-    .input:focus, select:focus {
-      border-color: var(--primary);
-      background: #FFF;
-    }
-
-    .segmented {
-      display: flex;
-      background: var(--bg);
-      padding: 3px;
-      border-radius: 10px;
-      margin-bottom: 12px;
-    }
-    .segmented button {
-      flex: 1;
-      border: none;
-      background: transparent;
-      padding: 8px 4px;
-      font-size: 12px;
-      font-weight: 600;
-      border-radius: 8px;
-      color: var(--subtext);
-      cursor: pointer;
-    }
-    .segmented button.active {
-      background: white;
-      color: var(--text);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    .balance-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-    }
+    .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--subtext); margin-bottom: 6px; }
+    .input, select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; background: #FAFAFA; color: var(--text); outline: none; -webkit-user-select: text; user-select: text; }
+    .input:focus, select:focus { border-color: var(--primary); background: #FFF; }
+    .segmented { display: flex; background: var(--bg); padding: 3px; border-radius: 10px; margin-bottom: 12px; }
+    .segmented button { flex: 1; border: none; background: transparent; padding: 8px 4px; font-size: 12px; font-weight: 600; border-radius: 8px; color: var(--subtext); cursor: pointer; }
+    .segmented button.active { background: white; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .balance-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
     .balance-row:last-child { border-bottom: none; }
     .pos-amount { color: var(--success); font-weight: 700; }
     .neg-amount { color: var(--danger); font-weight: 700; }
-
-    nav.tabbar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding-top: 8px;
-      padding-bottom: calc(var(--safe-bottom) + 6px);
-      z-index: 30;
-    }
-
-    .tab-btn {
-      background: none;
-      border: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      color: var(--subtext);
-      font-size: 11px;
-      font-weight: 500;
-      cursor: pointer;
-      flex: 1;
-    }
+    nav.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; padding-top: 8px; padding-bottom: calc(var(--safe-bottom) + 6px); z-index: 30; }
+    .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--subtext); font-size: 11px; font-weight: 500; cursor: pointer; flex: 1; }
     .tab-btn.active { color: var(--primary); font-weight: 600; }
     .tab-icon { font-size: 21px; }
-
-    .fab-add {
-      background: var(--primary);
-      color: white;
-      width: 48px;
-      height: 48px;
-      border-radius: 24px;
-      border: none;
-      font-size: 26px;
-      font-weight: 400;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
-      cursor: pointer;
-      margin-top: -14px;
-    }
-
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      display: none;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 50;
-    }
+    .fab-add { background: var(--primary); color: white; width: 48px; height: 48px; border-radius: 24px; border: none; font-size: 26px; font-weight: 400; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); cursor: pointer; margin-top: -14px; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
     .modal-overlay.open { display: flex; }
-    .modal-sheet {
-      background: var(--card);
-      width: 100%;
-      max-width: 540px;
-      max-height: 90dvh;
-      border-top-left-radius: 24px;
-      border-top-right-radius: 24px;
-      padding: 20px 18px calc(var(--safe-bottom) + 20px);
-      overflow-y: auto;
-      animation: slideUp 0.22s ease-out;
-    }
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
+    .modal-sheet { background: var(--card); width: 100%; max-width: 540px; max-height: 90dvh; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 20px 18px calc(var(--safe-bottom) + 20px); overflow-y: auto; animation: slideUp 0.22s ease-out; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .modal-title { font-size: 18px; font-weight: 700; }
-    .close-btn {
-      background: var(--bg);
-      border: none;
-      width: 30px;
-      height: 30px;
-      border-radius: 15px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .member-chip {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 12px;
-      background: var(--bg);
-      border-radius: 12px;
-      margin-bottom: 8px;
-    }
-
-    .split-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-      gap: 8px;
-    }
-    .split-row input[type="number"] {
-      width: 95px;
-      padding: 7px 10px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      text-align: right;
-      font-size: 14px;
-    }
+    .close-btn { background: var(--bg); border: none; width: 30px; height: 30px; border-radius: 15px; font-size: 16px; cursor: pointer; }
+    .member-chip { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg); border-radius: 12px; margin-bottom: 8px; }
+    .split-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); gap: 8px; }
+    .split-row input[type="number"] { width: 95px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; text-align: right; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -471,6 +155,14 @@
 
     <section id="tab-group" class="tab-view">
       <div class="card">
+        <h2>Mon Profil</h2>
+        <p style="font-size:13px; color:var(--subtext); margin-bottom:12px;">
+          Sélectionne ton profil pour pré-remplir automatiquement le payeur lors des dépenses.
+        </p>
+        <select id="myProfileSelect" class="input" onchange="state.myProfileId = this.value; saveState(); renderAll();"></select>
+      </div>
+
+      <div class="card">
         <h2>Participants du groupe</h2>
         <p style="font-size:13px; color:var(--subtext); margin-bottom:12px;">
           Ajoute les participants (mode sans compte : juste le prénom suffit).
@@ -509,7 +201,7 @@
       <span class="tab-icon">⚖️</span>
       <span>Équilibre</span>
     </button>
-    <button type="button" class="fab-add" onclick="openExpenseModal()" title="Nouvelle dépense">+</button>
+    <button type="button" class="fab-add" onclick="openExpenseModal()" title="Nouvelle opération">+</button>
     <button type="button" class="tab-btn" onclick="switchTab('stats', this)">
       <span class="tab-icon">📊</span>
       <span>Stats</span>
@@ -549,72 +241,101 @@
   <div class="modal-overlay" id="expenseModal">
     <div class="modal-sheet">
       <div class="modal-header">
-        <span class="modal-title">Nouvelle dépense</span>
+        <span class="modal-title" id="expenseModalTitle">Nouvelle opération</span>
         <button type="button" class="close-btn" onclick="closeModal('expenseModal')">✕</button>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">Titre de la dépense</label>
-        <input type="text" id="expTitle" class="input" placeholder="Ex: Courses, Loyer, Restaurant..." />
+      <div class="segmented" style="margin-bottom:16px;">
+        <button type="button" id="txTypeExp" class="active" onclick="setTxType('expense')">Dépense</button>
+        <button type="button" id="txTypeRef" onclick="setTxType('refund')">Remboursement</button>
       </div>
 
-      <div style="display:flex; gap:10px;">
-        <div class="form-group" style="flex:1;">
+      <div style="display:flex; gap:10px; margin-bottom: 14px;">
+        <div class="form-group" style="flex:1; margin-bottom:0;">
           <label class="form-label">Montant (€)</label>
           <input type="number" step="0.01" id="expAmount" class="input" placeholder="0.00" oninput="updateSplitPreview()" />
         </div>
-        <div class="form-group" style="flex:1;">
-          <label class="form-label">Catégorie</label>
-          <select id="expCategory">
-            <option value="🛒 Courses">🛒 Courses</option>
-            <option value="🏠 Loyer & Factures">🏠 Loyer & Factures</option>
-            <option value="🍽️ Restaurant">🍽️ Restaurant / Bar</option>
-            <option value="⛽ Transport">⛽ Transport</option>
-            <option value="🎟️ Loisirs">🎟️ Loisirs</option>
-            <option value="📦 Autre">📦 Autre</option>
-          </select>
-        </div>
-      </div>
-
-      <div style="display:flex; gap:10px;">
-        <div class="form-group" style="flex:1;">
+        <div class="form-group" style="flex:1; margin-bottom:0;">
           <label class="form-label">Date</label>
           <input type="date" id="expDate" class="input" />
         </div>
-        <div class="form-group" style="flex:1;">
-          <label class="form-label">Récurrence</label>
-          <select id="expRecurring">
-            <option value="none">Ponctuelle</option>
-            <option value="monthly">🔄 Mensuelle</option>
-            <option value="weekly">🔄 Hebdomadaire</option>
+      </div>
+
+      <!-- CHAMPS DEPENSES -->
+      <div id="expenseFields">
+        <div class="form-group">
+          <label class="form-label">Titre de la dépense</label>
+          <input type="text" id="expTitle" class="input" placeholder="Ex: Courses, Loyer, Restaurant..." />
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Catégorie</label>
+            <select id="expCategory">
+              <option value="🛒 Courses">🛒 Courses</option>
+              <option value="🏠 Loyer & Factures">🏠 Loyer & Factures</option>
+              <option value="🍽️ Restaurant">🍽️ Restaurant / Bar</option>
+              <option value="⛽ Transport">⛽ Transport</option>
+              <option value="🎟️ Loisirs">🎟️ Loisirs</option>
+              <option value="📦 Autre">📦 Autre</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Récurrence</label>
+            <select id="expRecurring">
+              <option value="none">Ponctuelle</option>
+              <option value="monthly">🔄 Mensuelle</option>
+              <option value="weekly">🔄 Hebdomadaire</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Payé par</label>
+          <div class="segmented">
+            <button type="button" id="payerSingleBtn" class="active" onclick="setPayerMode('single')">1 seul payeur</button>
+            <button type="button" id="payerMultiBtn" onclick="setPayerMode('multi')">Payeurs multiples</button>
+          </div>
+          <div id="singlePayerContainer">
+            <select id="expPayer"></select>
+          </div>
+          <div id="multiPayerContainer" style="display:none;"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mode de répartition</label>
+          <div class="segmented">
+            <button type="button" class="split-mode-btn active" onclick="setSplitMode('equal', this)">Équitable</button>
+            <button type="button" class="split-mode-btn" onclick="setSplitMode('exact', this)">Exact (€)</button>
+            <button type="button" class="split-mode-btn" onclick="setSplitMode('percent', this)">%</button>
+            <button type="button" class="split-mode-btn" onclick="setSplitMode('shares', this)">Parts</button>
+          </div>
+          <div id="splitMembersContainer"></div>
+        </div>
+      </div>
+
+      <!-- CHAMPS REMBOURSEMENTS -->
+      <div id="refundFields" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">De (celui qui rembourse)</label>
+          <select id="refundFrom" class="input"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">À (celui qui est remboursé)</label>
+          <select id="refundTo" class="input"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Moyen de paiement</label>
+          <select id="refundMethod" class="input">
+            <option value="Virement">Virement</option>
+            <option value="Paylib/Wero">Paylib/Wero</option>
+            <option value="Lydia">Lydia</option>
+            <option value="Espèces">Espèces</option>
           </select>
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">Payé par</label>
-        <div class="segmented">
-          <button type="button" id="payerSingleBtn" class="active" onclick="setPayerMode('single')">1 seul payeur</button>
-          <button type="button" id="payerMultiBtn" onclick="setPayerMode('multi')">Payeurs multiples</button>
-        </div>
-        <div id="singlePayerContainer">
-          <select id="expPayer"></select>
-        </div>
-        <div id="multiPayerContainer" style="display:none;"></div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Mode de répartition</label>
-        <div class="segmented">
-          <button type="button" class="split-mode-btn active" onclick="setSplitMode('equal', this)">Équitable</button>
-          <button type="button" class="split-mode-btn" onclick="setSplitMode('exact', this)">Exact (€)</button>
-          <button type="button" class="split-mode-btn" onclick="setSplitMode('percent', this)">%</button>
-          <button type="button" class="split-mode-btn" onclick="setSplitMode('shares', this)">Parts</button>
-        </div>
-        <div id="splitMembersContainer"></div>
-      </div>
-
-      <button type="button" class="btn" onclick="saveExpense()">Enregistrer la dépense</button>
+      <button type="button" class="btn" onclick="saveTransaction()">Enregistrer</button>
     </div>
   </div>
 
@@ -648,13 +369,12 @@
 
   <script>
     const STORAGE_KEY = 'partageo_clean_v2';
-    // Adresse de ta base Firebase, pré-remplie dans la fenêtre de synchro (facultatif).
-    // Ce n'est PAS un secret. Ne mets JAMAIS le code de salle ici (le dépôt GitHub est public).
-    const DEFAULT_DB_URL = '';  // ex: 'https://mon-projet-default-rtdb.europe-west1.firebasedatabase.app'
+    const DEFAULT_DB_URL = '';
     const CLOUD_KEY = 'partageo_cloud_config_v2';
 
     let state = {
       activeGroupId: 'g1',
+      myProfileId: null,
       groups: [
         {
           id: 'g1',
@@ -667,40 +387,21 @@
         }
       ],
       pendingSync: false,
-      updatedAt: 0   // 0 = état vierge : les données du cloud l'emportent toujours
+      updatedAt: 0
     };
 
-    let cloudConfig = {
-      dbUrl: '',
-      roomCode: ''
-    };
-
+    let cloudConfig = { dbUrl: '', roomCode: '' };
     let currentPayerMode = 'single';
     let currentSplitMode = 'equal';
+    let currentTxType = 'expense';
+    let showAllExpenses = false;
 
-    function safeGetStorage(key) {
-      try { return localStorage.getItem(key); } catch (e) { return null; }
-    }
-
-    function safeSetStorage(key, val) {
-      try { localStorage.setItem(key, val); } catch (e) {}
-    }
-
-    // ---------- Sécurité : échappement + validation des données ----------
-    function esc(v) {
-      return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    }
-    function safeId(v, fallback) {
-      const t = String(v ?? '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64);
-      return t || fallback;
-    }
-    function toNum(v) {
-      const n = Number(v);
-      return Number.isFinite(n) ? n : 0;
-    }
-    function toStr(v, max) {
-      return String(v ?? '').slice(0, max);
-    }
+    function safeGetStorage(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+    function safeSetStorage(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+    function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+    function safeId(v, fallback) { const t = String(v ?? '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64); return t || fallback; }
+    function toNum(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
+    function toStr(v, max) { return String(v ?? '').slice(0, max); }
     function numMap(o) {
       const out = {};
       if (!o || typeof o !== 'object') return out;
@@ -711,7 +412,14 @@
       });
       return out;
     }
-    // Reconstruit un état propre à partir de données externes (cloud, import, stockage local).
+
+    function formatDateFR(dateStr) {
+      if (!dateStr) return '';
+      const parts = dateStr.split('-');
+      if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      return dateStr;
+    }
+
     function sanitizeState(raw) {
       if (!raw || typeof raw !== 'object' || !Array.isArray(raw.groups) || raw.groups.length === 0) return null;
       const arr = (a, max) => (Array.isArray(a) ? a.slice(0, max) : (a && typeof a === 'object' ? Object.values(a).slice(0, max) : []));
@@ -721,10 +429,7 @@
           id: safeId(g.id, 'g_' + gi),
           name: toStr(g.name, 80) || 'Groupe',
           theme: toStr(g.theme, 60) || '🏠 Colocation',
-          members: arr(g.members, 100).map((m, i) => ({
-            id: safeId(m && m.id, 'm_' + i),
-            name: toStr(m && m.name, 60)
-          })),
+          members: arr(g.members, 100).map((m, i) => ({ id: safeId(m && m.id, 'm_' + i), name: toStr(m && m.name, 60) })),
           expenses: arr(g.expenses, 5000).map((e, i) => {
             e = e && typeof e === 'object' ? e : {};
             return {
@@ -759,6 +464,7 @@
       if (!groups.some(g => g.id === active)) active = groups[0].id;
       return {
         activeGroupId: active,
+        myProfileId: safeId(raw.myProfileId, null),
         groups,
         pendingSync: false,
         updatedAt: toNum(raw.updatedAt)
@@ -781,9 +487,8 @@
         try { cloudConfig = JSON.parse(savedCloud); } catch (e) {}
       }
       const dateInput = document.getElementById('expDate');
-      if (dateInput) {
-        dateInput.value = new Date().toISOString().split('T')[0];
-      }
+      if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+      
       updateSyncBadge();
       renderAll();
       if (cloudReady()) pullFromCloud(false);
@@ -807,17 +512,13 @@
       pushToCloud();
     }
 
-    function getCurrentGroup() {
-      return state.groups.find(g => g.id === state.activeGroupId) || state.groups[0];
-    }
+    function getCurrentGroup() { return state.groups.find(g => g.id === state.activeGroupId) || state.groups[0]; }
 
     let syncError = '';
     let pollTimer = null;
     let pushing = false;
 
-    function cloudReady() {
-      return !!(cloudConfig.dbUrl && cloudConfig.roomCode);
-    }
+    function cloudReady() { return !!(cloudConfig.dbUrl && cloudConfig.roomCode); }
 
     function updateSyncBadge() {
       const btn = document.getElementById('syncStatusBtn');
@@ -827,36 +528,26 @@
 
       if (!navigator.onLine) {
         btn.className = 'sync-badge sync-offline';
-        dot.textContent = '✈️';
-        label.textContent = 'Hors-ligne';
+        dot.textContent = '✈️'; label.textContent = 'Hors-ligne';
         heroSync.textContent = state.pendingSync ? 'En attente réseau ⏳' : 'Mode hors-ligne';
       } else if (cloudReady() && syncError) {
         btn.className = 'sync-badge sync-offline';
-        dot.textContent = '⚠️';
-        label.textContent = 'Erreur sync';
+        dot.textContent = '⚠️'; label.textContent = 'Erreur sync';
         heroSync.textContent = 'Erreur : ' + syncError;
       } else if (cloudReady()) {
         btn.className = 'sync-badge sync-online';
-        dot.textContent = '🟢';
-        label.textContent = state.pendingSync ? 'Envoi…' : 'Synchronisé';
+        dot.textContent = '🟢'; label.textContent = state.pendingSync ? 'Envoi…' : 'Synchronisé';
         heroSync.textContent = state.pendingSync ? 'Synchronisation...' : 'Synchronisé ☁️';
       } else {
         btn.className = 'sync-badge sync-local';
-        dot.textContent = '📱';
-        label.textContent = 'Local (Config Cloud)';
+        dot.textContent = '📱'; label.textContent = 'Local (Config Cloud)';
         heroSync.textContent = 'Sauvegardé sur iPhone ✓';
       }
     }
 
-    window.addEventListener('online', () => {
-      updateSyncBadge();
-      pushToCloud();
-    });
+    window.addEventListener('online', () => { updateSyncBadge(); pushToCloud(); });
     window.addEventListener('offline', updateSyncBadge);
-    // iOS suspend les timers en arrière-plan : on resynchronise au retour dans l'app
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) pullFromCloud(false);
-    });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) pullFromCloud(false); });
 
     function cloudEndpoint() {
       const base = cloudConfig.dbUrl.replace(/\/+$/, '');
@@ -866,11 +557,8 @@
     async function cloudFetch(options = {}) {
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 10000);
-      try {
-        return await fetch(cloudEndpoint(), { ...options, cache: 'no-store', signal: ctrl.signal });
-      } finally {
-        clearTimeout(timer);
-      }
+      try { return await fetch(cloudEndpoint(), { ...options, cache: 'no-store', signal: ctrl.signal }); } 
+      finally { clearTimeout(timer); }
     }
 
     function describeSyncError(e) {
@@ -885,23 +573,15 @@
       pushing = true;
       const sentAt = state.updatedAt;
       try {
-        const res = await cloudFetch({
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...state, pendingSync: false })
-        });
+        const res = await cloudFetch({ method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...state, pendingSync: false }) });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         syncError = '';
-        // Ne marquer "synchronisé" que si rien n'a changé pendant l'envoi
         if (state.updatedAt === sentAt) {
           state.pendingSync = false;
           safeSetStorage(STORAGE_KEY, JSON.stringify(state));
         }
-      } catch (e) {
-        syncError = describeSyncError(e);
-      } finally {
-        pushing = false;
-      }
+      } catch (e) { syncError = describeSyncError(e); } 
+      finally { pushing = false; }
       updateSyncBadge();
       if (!syncError && state.pendingSync && state.updatedAt !== sentAt) pushToCloud();
     }
@@ -911,20 +591,16 @@
       try {
         const res = await cloudFetch();
         if (res.status === 404) {
-          // La salle n'existe pas encore : on la crée si on a des données à envoyer
           syncError = '';
           if (state.pendingSync || manual) pushToCloud();
-          updateSyncBadge();
-          return;
+          updateSyncBadge(); return;
         }
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         syncError = '';
         if (data === null) {
-          // Salle vide (Firebase répond 200 + null) : on y envoie nos données s'il y en a
           if (state.updatedAt) pushToCloud();
-          updateSyncBadge();
-          return;
+          updateSyncBadge(); return;
         }
         const remote = sanitizeState(data);
         if (remote && remote.updatedAt && (manual || !state.updatedAt || remote.updatedAt > state.updatedAt)) {
@@ -935,9 +611,7 @@
         } else if (state.pendingSync) {
           pushToCloud();
         }
-      } catch (e) {
-        syncError = describeSyncError(e);
-      }
+      } catch (e) { syncError = describeSyncError(e); }
       updateSyncBadge();
     }
 
@@ -956,11 +630,8 @@
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let out = '';
       while (out.length < 32) {
-        const buf = new Uint8Array(64);
-        crypto.getRandomValues(buf);
-        for (const x of buf) {
-          if (x < 252 && out.length < 32) out += chars[x % 36]; // rejet : pas de biais
-        }
+        const buf = new Uint8Array(64); crypto.getRandomValues(buf);
+        for (const x of buf) { if (x < 252 && out.length < 32) out += chars[x % 36]; }
       }
       document.getElementById('cloudRoomCode').value = out;
     }
@@ -970,11 +641,10 @@
       if (!input.value) return;
       try {
         await navigator.clipboard.writeText(input.value);
-        alert('Code copié. Colle-le sur l\'autre iPhone (Messages, AirDrop…), puis supprime le message.');
+        alert('Code copié.');
       } catch (e) {
-        input.focus();
-        input.select();
-        alert('Copie impossible automatiquement : le code est sélectionné, utilise « Copier » dans le menu iOS.');
+        input.focus(); input.select();
+        alert('Copie impossible automatiquement, utilise Copier.');
       }
     }
 
@@ -982,33 +652,18 @@
       const url = document.getElementById('cloudDbUrl').value.trim().replace(/\/+$/, '');
       const code = document.getElementById('cloudRoomCode').value.trim().toUpperCase();
 
-      // Les deux champs vides : on désactive la synchronisation
       if (!url && !code) {
         cloudConfig = { dbUrl: '', roomCode: '' };
         safeSetStorage(CLOUD_KEY, JSON.stringify(cloudConfig));
-        syncError = '';
-        startPolling();
-        closeModal('cloudModal');
-        updateSyncBadge();
+        syncError = ''; startPolling(); closeModal('cloudModal'); updateSyncBadge();
         return;
       }
-      if (!/^https?:\/\/[^\s]+$/i.test(url)) {
-        return alert("L'adresse du serveur doit commencer par https://");
-      }
-      if (!/^https:\/\//i.test(url) && !confirm("Cette adresse n'est pas chiffrée (http). Le code secret circulerait en clair. Continuer quand même ?")) {
-        return;
-      }
-      if (!/^[A-Z0-9-]{20,64}$/.test(code)) {
-        return alert('Le code doit faire 20 à 64 caractères (lettres A-Z, chiffres, tirets). Utilise le bouton « Générer » sur le premier iPhone.');
-      }
+      if (!/^https?:\/\/[^\s]+$/i.test(url)) return alert("L'adresse doit commencer par https://");
+      if (!/^[A-Z0-9-]{20,64}$/.test(code)) return alert('Le code doit faire 20 à 64 caractères.');
 
-      cloudConfig.dbUrl = url;
-      cloudConfig.roomCode = code;
+      cloudConfig.dbUrl = url; cloudConfig.roomCode = code;
       safeSetStorage(CLOUD_KEY, JSON.stringify(cloudConfig));
-      syncError = '';
-      closeModal('cloudModal');
-      startPolling();
-      updateSyncBadge();
+      syncError = ''; closeModal('cloudModal'); startPolling(); updateSyncBadge();
       pullFromCloud(false).then(() => { if (state.pendingSync) pushToCloud(); });
     }
 
@@ -1026,25 +681,13 @@
       document.getElementById('groupModal').classList.add('open');
     }
 
-    function selectGroup(id) {
-      state.activeGroupId = id;
-      saveState();
-      closeModal('groupModal');
-    }
+    function selectGroup(id) { state.activeGroupId = id; saveState(); closeModal('groupModal'); }
 
     function createGroup() {
       const name = document.getElementById('newGroupName').value.trim();
       const theme = document.getElementById('newGroupTheme').value;
       if (!name) return alert('Indique un nom de groupe.');
-      const newGrp = {
-        id: 'g_' + Date.now(),
-        name,
-        theme,
-        members: [],
-        expenses: [],
-        settlements: [],
-        activity: []
-      };
+      const newGrp = { id: 'g_' + Date.now(), name, theme, members: [], expenses: [], settlements: [], activity: [] };
       state.groups.push(newGrp);
       state.activeGroupId = newGrp.id;
       document.getElementById('newGroupName').value = '';
@@ -1057,12 +700,10 @@
       const name = input.value.trim();
       if (!name) return;
       const grp = getCurrentGroup();
-      if (grp.members.some(m => m.name.toLowerCase() === name.toLowerCase())) {
-        return alert('Ce participant existe déjà dans le groupe.');
-      }
+      if (grp.members.some(m => m.name.toLowerCase() === name.toLowerCase())) return alert('Ce participant existe déjà.');
       grp.members.push({ id: 'm_' + Date.now(), name });
       input.value = '';
-      saveState(`Participant "${name}" ajouté au groupe`);
+      saveState(`Participant "${name}" ajouté`);
     }
 
     function removeMember(memberId) {
@@ -1071,20 +712,40 @@
       if (!m) return;
       if (!confirm(`Supprimer ${m.name} du groupe ?`)) return;
       grp.members = grp.members.filter(x => x.id !== memberId);
+      if(state.myProfileId === memberId) state.myProfileId = null;
       saveState(`Participant "${m.name}" retiré`);
+    }
+
+    function setTxType(type) {
+      currentTxType = type;
+      document.getElementById('txTypeExp').classList.toggle('active', type === 'expense');
+      document.getElementById('txTypeRef').classList.toggle('active', type === 'refund');
+      document.getElementById('expenseFields').style.display = type === 'expense' ? 'block' : 'none';
+      document.getElementById('refundFields').style.display = type === 'refund' ? 'block' : 'none';
     }
 
     function openExpenseModal() {
       const grp = getCurrentGroup();
       if (grp.members.length === 0) {
         switchTab('group', document.querySelectorAll('.tab-btn')[3]);
-        alert("Ajoute d'abord les participants du groupe (ex: ton prénom et celui de ta copine) dans l'onglet Groupe 👥 !");
+        alert("Ajoute d'abord les participants dans l'onglet Groupe 👥 !");
         document.getElementById('newMemberName').focus();
         return;
       }
+      
+      setTxType('expense');
       document.getElementById('expTitle').value = '';
       document.getElementById('expAmount').value = '';
       document.getElementById('expRecurring').value = 'none';
+      
+      const memberOptions = grp.members.map(m => `<option value="${m.id}">${esc(m.name)}</option>`).join('');
+      document.getElementById('refundFrom').innerHTML = memberOptions;
+      document.getElementById('refundTo').innerHTML = memberOptions;
+
+      if(state.myProfileId && grp.members.find(m => m.id === state.myProfileId)) {
+        document.getElementById('refundFrom').value = state.myProfileId;
+      }
+
       setPayerMode('single');
       setSplitMode('equal', document.querySelector('.split-mode-btn'));
       document.getElementById('expenseModal').classList.add('open');
@@ -1099,7 +760,9 @@
       if (mode === 'single') {
         document.getElementById('singlePayerContainer').style.display = 'block';
         document.getElementById('multiPayerContainer').style.display = 'none';
-        document.getElementById('expPayer').innerHTML = grp.members.map(m => `<option value="${m.id}">${esc(m.name)}</option>`).join('');
+        
+        let selHtml = grp.members.map(m => `<option value="${m.id}" ${state.myProfileId === m.id ? 'selected' : ''}>${esc(m.name)}</option>`).join('');
+        document.getElementById('expPayer').innerHTML = selHtml;
       } else {
         document.getElementById('singlePayerContainer').style.display = 'none';
         const multi = document.getElementById('multiPayerContainer');
@@ -1132,25 +795,16 @@
         `).join('');
       } else if (currentSplitMode === 'exact') {
         container.innerHTML = grp.members.map(m => `
-          <div class="split-row">
-            <span>${esc(m.name)} (€)</span>
-            <input type="number" step="0.01" class="split-custom-input" data-member="${m.id}" placeholder="0.00" />
-          </div>
+          <div class="split-row"><span>${esc(m.name)} (€)</span><input type="number" step="0.01" class="split-custom-input" data-member="${m.id}" placeholder="0.00" /></div>
         `).join('');
       } else if (currentSplitMode === 'percent') {
         const eqPct = Math.round(100 / grp.members.length);
         container.innerHTML = grp.members.map(m => `
-          <div class="split-row">
-            <span>${esc(m.name)} (%)</span>
-            <input type="number" step="1" class="split-custom-input" data-member="${m.id}" value="${eqPct}" />
-          </div>
+          <div class="split-row"><span>${esc(m.name)} (%)</span><input type="number" step="1" class="split-custom-input" data-member="${m.id}" value="${eqPct}" /></div>
         `).join('');
       } else if (currentSplitMode === 'shares') {
         container.innerHTML = grp.members.map(m => `
-          <div class="split-row">
-            <span>${esc(m.name)} (parts)</span>
-            <input type="number" step="1" class="split-custom-input" data-member="${m.id}" value="1" />
-          </div>
+          <div class="split-row"><span>${esc(m.name)} (parts)</span><input type="number" step="1" class="split-custom-input" data-member="${m.id}" value="1" /></div>
         `).join('');
       }
       updateSplitPreview();
@@ -1168,17 +822,41 @@
       });
     }
 
-    function saveExpense() {
-      const grp = getCurrentGroup();
-      const title = document.getElementById('expTitle').value.trim();
+    function saveTransaction() {
       const amount = parseFloat(document.getElementById('expAmount').value);
-      const category = document.getElementById('expCategory').value;
       const date = document.getElementById('expDate').value;
-      const recurring = document.getElementById('expRecurring').value;
+      if (isNaN(amount) || amount <= 0) return alert('Veuillez renseigner un montant valide.');
 
-      if (!title || isNaN(amount) || amount <= 0) {
-        return alert('Veuillez renseigner un titre et un montant valide.');
+      const grp = getCurrentGroup();
+
+      if (currentTxType === 'refund') {
+        const fromId = document.getElementById('refundFrom').value;
+        const toId = document.getElementById('refundTo').value;
+        const method = document.getElementById('refundMethod').value;
+        
+        if (fromId === toId) return alert('L'émetteur et le destinataire doivent être différents.');
+        
+        const fromName = getMemberName(grp, fromId);
+        const toName = getMemberName(grp, toId);
+
+        grp.settlements.unshift({
+          id: 'set_' + Date.now(),
+          from: fromId,
+          to: toId,
+          amount,
+          method,
+          date
+        });
+        saveState(`Remboursement : ${fromName} a réglé ${amount.toFixed(2)} € à ${toName}`);
+        closeModal('expenseModal');
+        return;
       }
+
+      // Mode Expense
+      const title = document.getElementById('expTitle').value.trim();
+      const category = document.getElementById('expCategory').value;
+      const recurring = document.getElementById('expRecurring').value;
+      if (!title) return alert('Veuillez renseigner un titre.');
 
       let paidBy = {};
       if (currentPayerMode === 'single') {
@@ -1188,14 +866,9 @@
         let sumPaid = 0;
         document.querySelectorAll('.multi-payer-input').forEach(inp => {
           const val = parseFloat(inp.value) || 0;
-          if (val > 0) {
-            paidBy[inp.dataset.member] = val;
-            sumPaid += val;
-          }
+          if (val > 0) { paidBy[inp.dataset.member] = val; sumPaid += val; }
         });
-        if (Math.abs(sumPaid - amount) > 0.05) {
-          return alert(`La somme des payeurs (${sumPaid.toFixed(2)} €) doit correspondre au montant total (${amount.toFixed(2)} €).`);
-        }
+        if (Math.abs(sumPaid - amount) > 0.05) return alert(`La somme des payeurs doit correspondre au montant total.`);
       }
 
       let splits = {};
@@ -1208,53 +881,28 @@
         let sumExact = 0;
         document.querySelectorAll('.split-custom-input').forEach(inp => {
           const val = parseFloat(inp.value) || 0;
-          if (val > 0) {
-            splits[inp.dataset.member] = val;
-            sumExact += val;
-          }
+          if (val > 0) { splits[inp.dataset.member] = val; sumExact += val; }
         });
-        if (Math.abs(sumExact - amount) > 0.05) {
-          return alert(`Le total réparti (${sumExact.toFixed(2)} €) ne correspond pas au montant (${amount.toFixed(2)} €).`);
-        }
+        if (Math.abs(sumExact - amount) > 0.05) return alert(`Le total réparti ne correspond pas au montant.`);
       } else if (currentSplitMode === 'percent') {
         let sumPct = 0;
         document.querySelectorAll('.split-custom-input').forEach(inp => {
           const pct = parseFloat(inp.value) || 0;
-          if (pct > 0) {
-            splits[inp.dataset.member] = (amount * pct) / 100;
-            sumPct += pct;
-          }
+          if (pct > 0) { splits[inp.dataset.member] = (amount * pct) / 100; sumPct += pct; }
         });
-        if (Math.abs(sumPct - 100) > 0.5) {
-          return alert(`Le total des pourcentages doit faire 100 % (actuellement ${sumPct} %).`);
-        }
+        if (Math.abs(sumPct - 100) > 0.5) return alert(`Le total des pourcentages doit faire 100 %`);
       } else if (currentSplitMode === 'shares') {
         let totalShares = 0;
         const rawShares = {};
         document.querySelectorAll('.split-custom-input').forEach(inp => {
           const sh = parseFloat(inp.value) || 0;
-          if (sh > 0) {
-            rawShares[inp.dataset.member] = sh;
-            totalShares += sh;
-          }
+          if (sh > 0) { rawShares[inp.dataset.member] = sh; totalShares += sh; }
         });
         if (totalShares <= 0) return alert('Indique au moins 1 part.');
-        Object.keys(rawShares).forEach(mId => {
-          splits[mId] = (amount * rawShares[mId]) / totalShares;
-        });
+        Object.keys(rawShares).forEach(mId => splits[mId] = (amount * rawShares[mId]) / totalShares);
       }
 
-      grp.expenses.unshift({
-        id: 'exp_' + Date.now(),
-        title,
-        amount,
-        category,
-        date,
-        recurring,
-        paidBy,
-        splits
-      });
-
+      grp.expenses.unshift({ id: 'exp_' + Date.now(), title, amount, category, date, recurring, paidBy, splits });
       closeModal('expenseModal');
       saveState(`Dépense "${title}" (${amount.toFixed(2)} €) ajoutée`);
     }
@@ -1271,21 +919,14 @@
     function computeBalances(grp) {
       const balances = {};
       grp.members.forEach(m => balances[m.id] = 0);
-
       grp.expenses.forEach(exp => {
-        Object.entries(exp.paidBy || {}).forEach(([mId, val]) => {
-          if (balances[mId] !== undefined) balances[mId] += val;
-        });
-        Object.entries(exp.splits || {}).forEach(([mId, val]) => {
-          if (balances[mId] !== undefined) balances[mId] -= val;
-        });
+        Object.entries(exp.paidBy || {}).forEach(([mId, val]) => { if (balances[mId] !== undefined) balances[mId] += val; });
+        Object.entries(exp.splits || {}).forEach(([mId, val]) => { if (balances[mId] !== undefined) balances[mId] -= val; });
       });
-
       (grp.settlements || []).forEach(s => {
         if (balances[s.from] !== undefined) balances[s.from] += s.amount;
         if (balances[s.to] !== undefined) balances[s.to] -= s.amount;
       });
-
       return balances;
     }
 
@@ -1296,57 +937,33 @@
         if (val < -0.01) debtors.push({ id, amount: -val });
         else if (val > 0.01) creditors.push({ id, amount: val });
       });
-
       debtors.sort((a, b) => b.amount - a.amount);
       creditors.sort((a, b) => b.amount - a.amount);
-
       const results = [];
       let i = 0, j = 0;
       while (i < debtors.length && j < creditors.length) {
-        const d = debtors[i];
-        const c = creditors[j];
+        const d = debtors[i], c = creditors[j];
         const settled = Math.min(d.amount, c.amount);
-        if (settled > 0.01) {
-          results.push({ from: d.id, to: c.id, amount: settled });
-        }
-        d.amount -= settled;
-        c.amount -= settled;
+        if (settled > 0.01) results.push({ from: d.id, to: c.id, amount: settled });
+        d.amount -= settled; c.amount -= settled;
         if (d.amount < 0.01) i++;
         if (c.amount < 0.01) j++;
       }
       return results;
     }
 
-    function recordSettlement(fromId, toId, amount) {
-      const grp = getCurrentGroup();
-      const fromName = getMemberName(grp, fromId);
-      const toName = getMemberName(grp, toId);
-      const method = prompt(`Règlement de ${fromName} à ${toName} (${amount.toFixed(2)} €). Mode de paiement (Virement, Paylib/Wero, Lydia, Espèces) :`, 'Virement');
-      if (!method) return;
-
-      grp.settlements.unshift({
-        id: 'set_' + Date.now(),
-        from: fromId,
-        to: toId,
-        amount,
-        method,
-        date: new Date().toLocaleDateString('fr-FR')
-      });
-      saveState(`Remboursement : ${fromName} a réglé ${amount.toFixed(2)} € à ${toName} (${method})`);
-    }
-
-    function getMemberName(grp, id) {
-      const m = grp.members.find(x => x.id === id);
-      return m ? m.name : 'Ancien membre';
-    }
-
-    function escName(grp, id) {
-      return esc(getMemberName(grp, id));
-    }
+    function getMemberName(grp, id) { const m = grp.members.find(x => x.id === id); return m ? m.name : 'Ancien membre'; }
+    function escName(grp, id) { return esc(getMemberName(grp, id)); }
 
     function renderAll() {
       const grp = getCurrentGroup();
       if (!grp) return;
+
+      const profileSelect = document.getElementById('myProfileSelect');
+      if(profileSelect) {
+        profileSelect.innerHTML = '<option value="">-- Aucun profil --</option>' + 
+          grp.members.map(m => `<option value="${m.id}" ${state.myProfileId === m.id ? 'selected' : ''}>${esc(m.name)}</option>`).join('');
+      }
 
       const themeParts = grp.theme.split(' ');
       document.getElementById('currentGroupIcon').textContent = themeParts[0] || '📁';
@@ -1359,21 +976,16 @@
       document.getElementById('heroExpenseCount').textContent = `${grp.expenses.length} dépense(s)`;
 
       const query = (document.getElementById('searchInput').value || '').toLowerCase();
-      const filteredExpenses = grp.expenses.filter(e =>
-        e.title.toLowerCase().includes(query) || e.category.toLowerCase().includes(query)
-      );
+      const filteredExpenses = grp.expenses.filter(e => e.title.toLowerCase().includes(query) || e.category.toLowerCase().includes(query));
+      const displayedExpenses = showAllExpenses ? filteredExpenses : filteredExpenses.slice(0, 5);
 
       const expContainer = document.getElementById('expensesList');
       if (grp.members.length === 0) {
-        expContainer.innerHTML = `
-          <div class="empty-state">
-            👋 Bienvenue sur <strong>Partageo</strong> !<br/>
-            Commence par ajouter vos prénoms dans l'onglet <strong>Groupe 👥</strong>, puis appuie sur le bouton <strong>+</strong> pour saisir une dépense.
-          </div>`;
+        expContainer.innerHTML = `<div class="empty-state">Commence par ajouter vos prénoms dans l'onglet <strong>Groupe 👥</strong></div>`;
       } else if (filteredExpenses.length === 0) {
         expContainer.innerHTML = `<div class="empty-state">Aucune dépense enregistrée pour le moment.</div>`;
       } else {
-        expContainer.innerHTML = filteredExpenses.map(e => {
+        let htmlList = displayedExpenses.map(e => {
           const catIcon = e.category.split(' ')[0];
           const payers = Object.entries(e.paidBy || {}).map(([id, val]) => `${escName(grp, id)} (${val.toFixed(2)}€)`).join(', ');
           return `
@@ -1382,103 +994,59 @@
                 <div class="exp-icon">${esc(catIcon)}</div>
                 <div>
                   <div class="exp-title">${esc(e.title)}</div>
-                  <div class="exp-meta">Payé par ${payers} • ${esc(e.date || '')}</div>
+                  <div class="exp-meta">Payé par ${payers} • ${formatDateFR(esc(e.date || ''))}</div>
                 </div>
               </div>
               <div class="exp-right">
                 <div class="exp-amount">${e.amount.toFixed(2)} €</div>
-                ${e.recurring && e.recurring !== 'none' ? `<span class="badge">🔄 ${e.recurring === 'monthly' ? 'Mensuel' : 'Hebdo'}</span>` : ''}
               </div>
             </div>
           `;
         }).join('');
+        
+        if (!showAllExpenses && filteredExpenses.length > 5) {
+          htmlList += `<button type="button" class="btn btn-secondary" style="margin-top:12px;" onclick="showAllExpenses=true; renderAll()">Voir les ${filteredExpenses.length - 5} autres opérations</button>`;
+        }
+        expContainer.innerHTML = htmlList;
       }
 
       const balances = computeBalances(grp);
       const balContainer = document.getElementById('balancesList');
-      if (grp.members.length === 0) {
-        balContainer.innerHTML = `<div class="empty-state">Ajoute des participants pour voir l'équilibre.</div>`;
-      } else {
+      if (grp.members.length === 0) balContainer.innerHTML = `<div class="empty-state">Ajoute des participants.</div>`;
+      else {
         balContainer.innerHTML = grp.members.map(m => {
           const val = balances[m.id] || 0;
           const cls = val > 0.01 ? 'pos-amount' : (val < -0.01 ? 'neg-amount' : '');
           const sign = val > 0.01 ? '+' : '';
-          return `
-            <div class="balance-row">
-              <span><strong>${esc(m.name)}</strong></span>
-              <span class="${cls}">${sign}${val.toFixed(2)} €</span>
-            </div>
-          `;
+          return `<div class="balance-row"><span><strong>${esc(m.name)}</strong></span><span class="${cls}">${sign}${val.toFixed(2)} €</span></div>`;
         }).join('');
       }
 
       const suggestions = computeSuggestedSettlements(grp, balances);
       const setContainer = document.getElementById('settlementsList');
-      if (suggestions.length === 0) {
-        setContainer.innerHTML = `<div class="empty-state">Les comptes sont parfaitement équilibrés ! ✨</div>`;
-      } else {
+      if (suggestions.length === 0) setContainer.innerHTML = `<div class="empty-state">Les comptes sont parfaitement équilibrés ! ✨</div>`;
+      else {
         setContainer.innerHTML = suggestions.map(s => `
           <div class="balance-row">
-            <div>
-              <strong>${escName(grp, s.from)}</strong> doit <strong>${s.amount.toFixed(2)} €</strong> à <strong>${escName(grp, s.to)}</strong>
-            </div>
-            <button type="button" class="btn btn-sm" onclick="recordSettlement('${s.from}', '${s.to}', ${s.amount})">Rembourser</button>
+            <div><strong>${escName(grp, s.from)}</strong> doit <strong>${s.amount.toFixed(2)} €</strong> à <strong>${escName(grp, s.to)}</strong></div>
           </div>
         `).join('');
       }
 
       const payHist = document.getElementById('paymentsHistoryList');
-      if (!grp.settlements || grp.settlements.length === 0) {
-        payHist.innerHTML = `<div class="empty-state">Aucun règlement effectué.</div>`;
-      } else {
+      if (!grp.settlements || grp.settlements.length === 0) payHist.innerHTML = `<div class="empty-state">Aucun règlement effectué.</div>`;
+      else {
         payHist.innerHTML = grp.settlements.map(s => `
           <div class="balance-row" style="font-size:13px;">
             <span>✅ <strong>${escName(grp, s.from)}</strong> → <strong>${escName(grp, s.to)}</strong> (${esc(s.method)})</span>
-            <span><strong>${s.amount.toFixed(2)} €</strong> • ${esc(s.date)}</span>
-          </div>
-        `).join('');
-      }
-
-      const catContainer = document.getElementById('categoryStats');
-      if (grp.expenses.length === 0) {
-        catContainer.innerHTML = `<div class="empty-state">Ajoute des dépenses pour afficher les graphiques.</div>`;
-      } else {
-        const byCat = {};
-        grp.expenses.forEach(e => {
-          byCat[e.category] = (byCat[e.category] || 0) + e.amount;
-        });
-        catContainer.innerHTML = Object.entries(byCat).sort((a,b) => b[1] - a[1]).map(([cat, val]) => {
-          const pct = total > 0 ? Math.round((val / total) * 100) : 0;
-          return `
-            <div style="margin-bottom:12px;">
-              <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
-                <span><strong>${esc(cat)}</strong></span>
-                <span>${val.toFixed(2)} € (${pct}%)</span>
-              </div>
-              <div style="height:8px; background:var(--bg); border-radius:4px; overflow:hidden;">
-                <div style="height:100%; width:${pct}%; background:var(--primary);"></div>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-
-      const actContainer = document.getElementById('activityLogList');
-      if (!grp.activity || grp.activity.length === 0) {
-        actContainer.innerHTML = `<div class="empty-state">Aucune activité récente.</div>`;
-      } else {
-        actContainer.innerHTML = grp.activity.slice(0, 20).map(a => `
-          <div class="balance-row" style="font-size:13px;">
-            <span>${esc(a.text)}</span>
-            <span style="color:var(--subtext); font-size:11px;">${esc(a.date)}</span>
+            <span><strong>${s.amount.toFixed(2)} €</strong> • ${formatDateFR(esc(s.date))}</span>
           </div>
         `).join('');
       }
 
       const memContainer = document.getElementById('membersList');
-      if (grp.members.length === 0) {
-        memContainer.innerHTML = `<div class="empty-state">Aucun participant pour l'instant.</div>`;
-      } else {
+      if (grp.members.length === 0) memContainer.innerHTML = `<div class="empty-state">Aucun participant.</div>`;
+      else {
         memContainer.innerHTML = grp.members.map(m => `
           <div class="member-chip">
             <span>👤 <strong>${esc(m.name)}</strong></span>
@@ -1495,44 +1063,20 @@
       if (btnEl) btnEl.classList.add('active');
     }
 
-    function closeModal(id) {
-      document.getElementById(id).classList.remove('open');
-    }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
     function exportBackup() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
-      const a = document.createElement('a');
-      a.setAttribute("href", dataStr);
-      a.setAttribute("download", "partageo_sauvegarde.json");
-      a.click();
+      const a = document.createElement('a'); a.setAttribute("href", dataStr); a.setAttribute("download", "partageo_sauvegarde.json"); a.click();
     }
-
     function importBackup(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+      const file = event.target.files[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = function(e) {
-        try {
-          const imported = sanitizeState(JSON.parse(e.target.result));
-          if (imported) {
-            state = imported;
-            saveState('Sauvegarde importée');
-            alert('Données restaurées avec succès !');
-          } else {
-            alert('Fichier invalide.');
-          }
-        } catch (err) {
-          alert('Fichier invalide.');
-        }
-      };
-      reader.readAsText(file);
+        try { const imported = sanitizeState(JSON.parse(e.target.result)); if (imported) { state = imported; saveState('Sauvegarde importée'); alert('Données restaurées !'); } else alert('Fichier invalide.'); } catch (err) { alert('Fichier invalide.'); }
+      }; reader.readAsText(file);
     }
-
-    function resetAllData() {
-      if (!confirm('Tout effacer et repartir de zéro ?')) return;
-      try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-      location.reload();
-    }
+    function resetAllData() { if (confirm('Tout effacer ?')) { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} location.reload(); } }
 
     loadState();
   </script>
